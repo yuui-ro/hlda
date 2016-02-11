@@ -98,7 +98,7 @@ void compute_gibbs_score(gibbs_state * state)
     }
 }
 
-void iterate_gibbs_state(gibbs_state * state)
+void iterate_gibbs_state(gibbs_state * state, int sampling_hyper)
 {
     tree* tr = state->tr;
     corpus* corp = state->corp;
@@ -127,20 +127,22 @@ void iterate_gibbs_state(gibbs_state * state)
     }
     if (do_shuffle == TRUE)
     {
-        gsl_ran_shuffle(RANDNUMGEN, corp->doc, corp->ndoc, sizeof(doc*));
+      //gsl_ran_shuffle(RANDNUMGEN, corp->doc, corp->ndoc, sizeof(doc*));
     }
     // sample paths and level allocations
     int d;
     for (d = 0; d < corp->ndoc; d++)
     {
+      if(corp->doc[d]->state==active)
         tree_sample_doc_path(tr, corp->doc[d], 1, sampling_level);
     }
     for (d = 0; d < corp->ndoc; d++)
     {
+      if(corp->doc[d]->state==active)
         doc_sample_levels(corp->doc[d], do_shuffle, 1);
     }
     // sample hyper-parameters
-    if ((state->hyper_lag > 0) && (iter % state->hyper_lag) == 0)
+    if (sampling_hyper && (state->hyper_lag > 0) && (iter % state->hyper_lag) == 0)
     {
         if (state->sample_eta == 1)
         {
@@ -165,12 +167,15 @@ void init_gibbs_state(gibbs_state* state)
 {
     tree* tr = state->tr;
     corpus* corp = state->corp;
-    gsl_ran_shuffle(RANDNUMGEN, corp->doc, corp->ndoc, sizeof(doc*));
+    //gsl_ran_shuffle(RANDNUMGEN, corp->doc, corp->ndoc, sizeof(doc*));
     int depth = tr->depth;
     int i, j;
     for (i = 0; i < corp->ndoc; i++)
     {
         doc* d = corp->doc[i];
+
+        if(d->state != active) continue;
+
         gsl_vector_set_zero(d->tot_levels);
         gsl_vector_set_zero(d->log_p_level);
         iv_permute(d->word);
@@ -188,9 +193,41 @@ void init_gibbs_state(gibbs_state* state)
     compute_gibbs_score(state);
 }
 
+
+static void set_heldout_state(corpus *corp, int train_size)
+{
+  int i;
+  for(i=0; i<corp->ndoc; i++)
+    {
+      if(i<train_size)
+        {
+          corp->doc[i]->state = active;
+        }
+      else
+        {
+          corp->doc[i]->state = heldout;
+        }
+    }
+}
+
+
+// set the state of active documents to frozen
+void set_frozen_state(corpus *corp) {
+  int i;
+  for(i=0; i<corp->ndoc; i++)
+    {
+      if(corp->doc[i]->state == active)
+        {
+          corp->doc[i]->state = frozen;
+        }
+    }
+}
+
+
 gibbs_state* init_gibbs_state_w_rep(char* corpus_fname,
                                     char* settings,
-                                    char* out_dir)
+                                    char* out_dir,
+                                    int train_size)
 {
     outlog("initializing state");
     gibbs_state* best_state;
@@ -198,8 +235,9 @@ gibbs_state* init_gibbs_state_w_rep(char* corpus_fname,
     int rep;
     for (rep = 0; rep < NINITREP; rep++)
     {
-        gibbs_state* state = new_gibbs_state(corpus_fname,
-                                             settings);
+        gibbs_state* state = new_gibbs_state(settings);
+        read_corpus(corpus_fname, state->corp, state->tr->depth);
+        set_heldout_state(state->corp, train_size);
         init_gibbs_state(state);
 
         if ((rep == 0) || (state->score > best_score))
@@ -227,8 +265,7 @@ gibbs_state* init_gibbs_state_w_rep(char* corpus_fname,
     return(best_state);
 }
 
-
-gibbs_state * new_gibbs_state(char* corpus, char* settings)
+gibbs_state * new_gibbs_state(char* settings)
 {
     gibbs_state * state = malloc(sizeof(gibbs_state));
     init_random_number_generator();
@@ -248,7 +285,8 @@ gibbs_state * new_gibbs_state(char* corpus, char* settings)
     // set up the gibbs state
     state->iter = 0;
     state->corp = corpus_new(gem_mean, gem_scale);
-    read_corpus(corpus, state->corp, depth);
+    //read_corpus(corpus, state->corp, depth);
+
     state->tr = tree_new(depth, state->corp->nterms,
                          eta,
                          gam,
@@ -355,7 +393,7 @@ double mean_heldout_score(corpus* corp,
     for (iter = 0; iter < niter; iter++)
     {
         if ((iter % 100) == 0) outlog("held-out iter %04d", iter);
-        iterate_gibbs_state(state);
+        iterate_gibbs_state(state, 1);
         if ((iter >= burn) && ((iter % lag) == 0))
         {
             double this_score = state->score - orig->score;

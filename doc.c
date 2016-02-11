@@ -133,7 +133,8 @@ void read_corpus(char* data_filename, corpus* c, int depth)
         d = c->doc[c->ndoc-1];
         d->id = c->ndoc-1;
         d->word = new_int_vector(0);
-
+        d->state = active; // by default set the state to active
+        
         // read document
 
         for (n = 0; n < nunique; n++)

@@ -41,7 +41,13 @@ typedef struct tree
     int next_id;            // the next id for a new topic
 } tree;
 
-
+enum doc_state
+  {
+    frozen,
+    active,
+    heldout
+  };
+  
 typedef struct doc
 {
     int_vector* word;            // each word
@@ -54,6 +60,7 @@ typedef struct doc
     double* gem_mean;
     double* gem_scale;
     double score;
+    enum doc_state state;
 } doc;
 
 
