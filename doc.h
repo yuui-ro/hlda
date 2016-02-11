@@ -32,7 +32,7 @@ void doc_update_level(doc* d, int l, double update);
  *
  */
 
-void read_corpus(char* filename, corpus* c, int depth);
+void read_corpus(char* filename, corpus* c, int depth, int train_size);
 
 /*
  * allocate a new corpus

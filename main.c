@@ -60,7 +60,7 @@ void main_heldout(int ac, char* av[])
     gibbs_state* state = init_gibbs_state_w_rep(train, settings, out_dir, -1);
     corpus* heldout_corp = corpus_new(state->corp->gem_mean,
                                       state->corp->gem_scale);
-    read_corpus(test, heldout_corp, state->tr->depth);
+    read_corpus(test, heldout_corp, state->tr->depth, -1);
 
     char filename[100];
     sprintf(filename, "%s/test.dat", state->run_dir);

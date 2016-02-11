@@ -24,7 +24,7 @@ void compute_gibbs_score(gibbs_state * state);
 
 void iterate_gibbs_state(gibbs_state * state,  int sampling_hyper);
 
-gibbs_state * new_gibbs_state(char* settings);
+gibbs_state * new_gibbs_state(char *corpus, char* settings, int train_size);
 
 gibbs_state * new_heldout_gibbs_state(corpus* corp, gibbs_state* orig);
 

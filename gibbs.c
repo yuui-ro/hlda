@@ -194,23 +194,6 @@ void init_gibbs_state(gibbs_state* state)
 }
 
 
-static void set_heldout_state(corpus *corp, int train_size)
-{
-  int i;
-  for(i=0; i<corp->ndoc; i++)
-    {
-      if(i<train_size)
-        {
-          corp->doc[i]->state = active;
-        }
-      else
-        {
-          corp->doc[i]->state = heldout;
-        }
-    }
-}
-
-
 // set the state of active documents to frozen
 void set_frozen_state(corpus *corp) {
   int i;
@@ -235,9 +218,7 @@ gibbs_state* init_gibbs_state_w_rep(char* corpus_fname,
     int rep;
     for (rep = 0; rep < NINITREP; rep++)
     {
-        gibbs_state* state = new_gibbs_state(settings);
-        read_corpus(corpus_fname, state->corp, state->tr->depth);
-        set_heldout_state(state->corp, train_size);
+        gibbs_state* state = new_gibbs_state(corpus_fname, settings, train_size);
         init_gibbs_state(state);
 
         if ((rep == 0) || (state->score > best_score))
@@ -265,7 +246,7 @@ gibbs_state* init_gibbs_state_w_rep(char* corpus_fname,
     return(best_state);
 }
 
-gibbs_state * new_gibbs_state(char* settings)
+gibbs_state * new_gibbs_state(char *corpus, char* settings, int train_size)
 {
     gibbs_state * state = malloc(sizeof(gibbs_state));
     init_random_number_generator();
@@ -285,7 +266,7 @@ gibbs_state * new_gibbs_state(char* settings)
     // set up the gibbs state
     state->iter = 0;
     state->corp = corpus_new(gem_mean, gem_scale);
-    //read_corpus(corpus, state->corp, depth);
+    read_corpus(corpus, state->corp, depth, train_size);
 
     state->tr = tree_new(depth, state->corp->nterms,
                          eta,
