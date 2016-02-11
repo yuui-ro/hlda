@@ -133,7 +133,7 @@ void read_corpus(char* data_filename, corpus* c, int depth, int train_size)
         d = c->doc[c->ndoc-1];
         d->id = c->ndoc-1;
         d->word = new_int_vector(0);
-        if(d->id<train_size)
+        if(train_size<0 || d->id<train_size)
           {
             d->state = active;
           }
