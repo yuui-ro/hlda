@@ -230,6 +230,7 @@ void write_corpus_assignment(corpus* corp, FILE* file)
     int depth = corp->doc[0]->path[0]->tr->depth;
     for (d = 0; d < corp->ndoc; d++)
     {
+        if(corp->doc[d]->state != active) continue;
         fprintf(file, "%d", corp->doc[d]->id);
         fprintf(file, " %1.9e", (corp->doc[d]->score /
                                  (double) corp->doc[d]->word->size));

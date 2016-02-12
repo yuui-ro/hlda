@@ -14,9 +14,9 @@
 #define NRESTARTS 1
 #define TRAIN_NUM_SAMPLE 1
 #define TRAIN_NUM_SPACE 100
-#define TRAIN_BURNIN 3000
+#define TRAIN_BURNIN 300
 #define TEST_NUM_SAMPLE 10
-#define TEST_BURNIN 3000
+#define TEST_BURNIN 300
 
 
 static inline double log_addition(double logx1, double logx2) {
@@ -167,7 +167,7 @@ void main_heldout_harmonic_mean(int ac, char *av[]) {
                 {
                   iterate_gibbs_state(test_state, 0);
                   after_loglik[j] = test_state->eta_score;
-                  double ll = state->eta_score - before_loglik;
+                  double ll = test_state->eta_score - before_loglik;
                   testloglik[postsample_no][i] = log_addition(testloglik[postsample_no][i], -ll);
                 }
               testloglik[postsample_no][i] += log(TEST_NUM_SAMPLE);
@@ -200,8 +200,14 @@ int main(int ac, char* av[])
             main_heldout(ac, av);
             return(0);
         }
+        else if (strcmp(av[1], "heldout_harmonic") == 0)
+          {
+            main_heldout_harmonic_mean(ac, av);
+            return(0);
+          }
     }
     outlog("USAGE: ./main gibbs corpus settings out");
     outlog("       ./main heldout train test settings out");
+    outlog("       ./main heldout_harmonic corpus train_size settings out");
     return(0);
 }

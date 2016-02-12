@@ -66,6 +66,15 @@ double eta_score(topic* t)
     return(score);
 }
 
+int topic_words(topic *t) {
+  int nn = t->w_tot;
+  int c;
+  for (c=0; c<t->nchild; c++)
+    {
+      nn += topic_words(t->child[c]);
+    }
+  return nn;
+}
 
 void tree_mh_update_eta(tree* tr)
 {
