@@ -8,8 +8,8 @@
 #include <assert.h>
 #include <string.h>
 
-#define MAX_ITER 10000
-#define TEST_LAG 100
+#define MAX_ITER 30
+#define TEST_LAG 30
 #define NRESTARTS 1
 
 // simple gibbs sampling on a data set
@@ -53,20 +53,39 @@ void main_heldout(int ac, char* av[])
     char filename[100];
     sprintf(filename, "%s/test.dat", state->run_dir);
     FILE* test_log = fopen(filename, "w");
+    sprintf(filename, "%s/test_perplexity.dat", state->run_dir);
+    FILE* perplexity_log = fopen(filename, "w");
+    sprintf(filename, "%s/test_numwords.dat", state->run_dir);
+    FILE* numwords_log = fopen(filename, "w");
+    sprintf(filename, "%s/test_loglik.dat", state->run_dir);
+    FILE* loglik_log = fopen(filename, "w");
+
     int iter;
     for (iter = 0; iter < MAX_ITER; iter++)
     {
         iterate_gibbs_state(state);
         if ((state->iter % TEST_LAG) == 0)
         {
-            double score = mean_heldout_score(heldout_corp, state,
-                                              200, 1, 1000);
+          double score, eta_score;
+          int numwords;
+            mean_heldout_score(heldout_corp, state,
+                               300, 1, 200, &score, &eta_score);
+            numwords = total_number_words(heldout_corp);
             fprintf(test_log, "%04d %10.3f %d\n",
                     state->iter, score, ntopics_in_tree(state->tr));
+            fprintf(loglik_log, "%f", eta_score);
+            fprintf(numwords_log, "%d", numwords);
+            fprintf(perplexity_log, "%f", exp(-eta_score/numwords));
             fflush(test_log);
+            fflush(loglik_log);
+            fflush(numwords_log);
+            fflush(perplexity_log);
         }
     }
     fclose(test_log);
+    fclose(loglik_log);
+    fclose(numwords_log);
+    fclose(perplexity_log);
 }
 
 

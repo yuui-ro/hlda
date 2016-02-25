@@ -72,4 +72,6 @@ void write_corpus_levels(corpus* corp, FILE* file);
 void free_corpus(corpus* corp);
 void free_doc(doc* d);
 
+int total_number_words(corpus *corp);
+
 #endif

@@ -339,15 +339,18 @@ gibbs_state * new_heldout_gibbs_state(corpus* corp, gibbs_state* orig)
 }
 
 
-double mean_heldout_score(corpus* corp,
-                          gibbs_state* orig,
-                          int burn,
-                          int lag,
-                          int niter)
+void mean_heldout_score(corpus* corp,
+                        gibbs_state* orig,
+                        int burn,
+                        int lag,
+                        int niter,
+                        double *score,
+                        double *eta_score)
 {
-    double score = 0;
     int nsamples = 0;
-
+    
+    *eta_score = 0;
+    *score = 0;
     gibbs_state* state = new_heldout_gibbs_state(corp, orig);
 
     init_gibbs_state(state);
@@ -361,15 +364,17 @@ double mean_heldout_score(corpus* corp,
             double this_score = state->score - orig->score;
             this_score -= state->gamma_score;
             this_score += orig->gamma_score;
-            score += this_score;
+            *score += this_score;
+            *eta_score += state->eta_score - orig->eta_score;
             nsamples += 1;
         }
     }
-    score = score / nsamples;
+    *score = *score / nsamples;
+    *eta_score = *eta_score / nsamples;
     outlog("mean held-out score = %7.3f (%d samples)", score, nsamples);
     free_tree(state->tr);
     free(state);
-    return(score);
+    //    return(score);
 }
 
 

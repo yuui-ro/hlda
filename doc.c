@@ -1,5 +1,14 @@
 #include "doc.h"
 
+int total_number_words(corpus *corp) {
+  int i, total=0;
+  for(i=0; i<corp->ndoc; i++) {
+    doc *d = corp->doc[i];
+    total += d->word->size;
+  }
+  return total;
+}
+
 /*
  * resample the levels of a document
  *

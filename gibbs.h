@@ -28,11 +28,13 @@ gibbs_state * new_gibbs_state(char* corpus, char* settings);
 
 gibbs_state * new_heldout_gibbs_state(corpus* corp, gibbs_state* orig);
 
-double mean_heldout_score(corpus* corp,
-                          gibbs_state* orig,
-                          int burn,
-                          int lag,
-                          int niter);
+void mean_heldout_score(corpus* corp,
+                        gibbs_state* orig,
+                        int burn,
+                        int lag,
+                        int niter,
+                        double *score,
+                        double *eta_score);
 
 void free_gibbs_state(gibbs_state* state);
 

@@ -50,8 +50,8 @@ double eta_score(topic* t)
 
     for (w = 0; w < nwords; w++)
     {
-	// score += lgam(vget(t->w_cnt, w) + eta);
-        score += vget(t->lgam_w_plus_eta, w);
+	 score += lgam(vget(t->w_cnt, w) + eta);
+        //score += vget(t->lgam_w_plus_eta, w);
     }
 
     score -= lgam(t->w_tot + nwords * eta);
