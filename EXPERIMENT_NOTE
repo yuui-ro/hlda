@@ -1,0 +1,35 @@
+1. Romved the switch -fast for compiler gcc so that the compilation does not fail.
+   The use of -fast is unclear.
+
+2. To run hlda, we can choose between (1) ./main gibbs corpus settings out
+   and (2) ./main heldout train test settings out. The former only perform
+   Gibbs sampling for the corpus file, while the latter additionally evaluates
+   the log likelihood of the held-out documents passed in the file test.
+   Both require the configuration file written in the file settings. Some output
+   data will be written to files in the directory out, which must be an
+   existing directory, or an I/O error will be raised.
+
+3. Each line of the input data follows the format
+       [# of unique terms] [term #] : [count] ...
+   Note (1) there is no whitespace around ":";
+        (2) the term number can start with zero.
+
+4. hlda carefully chooses the initial states of training documents before
+   performing gibbs sampling, by randomly initializing the states of documents
+   for multiple times. The number of comparing times is defined by the macro
+   "NINITREP" in gibbs.h.
+   The initial states that yield the best score are recorded, and become the stating
+   point for the Gibbs sampler.
+
+5. According to the original paper, the score is computed as follows
+       log p(c,z,w|gam,eta,m,pi)
+   By this, the mode of the posterior can be evaluated and the corresponding
+   c, z can be chosen for different purposes, for example selecting the initial
+   states and output the results of inference.
+   However, it is still different from
+       logp(w|gam,eta,m,pi)
+   which is used for computing the perplexity.
+
+5. The number of iterations is defined by the macro MAX_ITER defaultly set to 10000 in main.c. With a fixed model obtained from  
+
+6. 
